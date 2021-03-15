@@ -10,7 +10,7 @@
     <div id="app">
         <h2>Lista de Tarefas</h2>
         <input type="text" placeholder="Insira uma nova tarefa" v-model="novaTarefa" @key.enter="tarefas.push(novaTarefa)">
-        <button @click="inseretarefa()">Inserir</button>
+        <button @click="insiratarefa()">Inserir</button>
         <ul>
             <li v-for="item in tarefas">{{ item }}</li>
         </ul>

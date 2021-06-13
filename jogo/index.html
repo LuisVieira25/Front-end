@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Monster Slayer</title>
+        <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+        <link rel="stylesheet" href="foundation.min.css">
+        <link rel="stylesheet" href="app.css">
+    </head>
+    <body>
+        <div id="app">
+            <section class="row">
+                <div class="text-center small-6 columns">
+                    <h1 class="text-center">RICK</h1>
+                    <transition enter-active-class="animate__animated animate__shakeX" leave-active-class="animate__animated animate__shakeX">
+                        <img src="S4e6_rick_arms.webp" alt="player" width="350px" v-if="shakeP">
+                    </transition>
+                    <div class="healthbar">
+                        <div class="healthbar text-center" v-bind:style="{'width':playerHealth+'%'}" style="background-color: green; margin: 0; color: white;">
+                            {{playerHealth}}
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center small-6 columns">
+                    <h1 class="text-center">ZEUS</h1>
+                    <transition enter-active-class="animate__animated animate__shakeX" leave-active-class="animate__animated animate__shakeX">
+                        <img src="rick-and-morty-zeus-1222179-1280x0.jpeg" alt="player" width="350px" v-if="shakeP">
+                    </transition>
+                    <div class="healthbar">
+                        <div class="healthbar text-center" v-bind:style="{'width':monsterHealth+'%'}" style="background-color: green; margin: 0; color: white;">
+                            {{monsterHealth}}
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="row controls" v-if="!gameIsRuning">
+                <div class="small-12 columns">
+                    <button id="start-game" @click="startGame">START NEW GAME</button>
+                </div>
+            </section>
+            <section class="row controls" v-if="gameIsRuning">
+                <div class="small-12 columns">
+                    <button id="attack" @click="attack">ATTACK</button>
+                    <button id="special-attack" @click="specialAttack">SPECIAL ATTACK</button>
+                    <button id="heal" @click="heal">HEAL</button>
+                    <button id="give-up" @click="giveUp">GIVE UP</button>
+                </div>
+            </section>
+            <section class="row log">
+                <div class="small-12 columns">
+                    <ul>
+                        <transition-group name='fade' appear>
+                            <li v-for="turn in turns" :key="turn.text" :class="{'player-turn': turn.isPlayer, 'monster-turn': !turn.isPlayer}">
+                                {{turn.text}}
+                            </li>
+                        </transition-group>
+                    </ul>
+                </div>
+            </section>
+        </div>
+        <style>
+            .fade-enter-active{
+                transition: opacity 1.5s;
+            }
+            .fade-enter{
+                opacity: 0;
+            }
+        </style>
+        <script>
+            new Vue({
+                el:"#app",
+                data:{
+                    playerHealth: 50,
+                    monsterHealth: 100,
+                    gameIsRuning: false,
+                    turns:[],
+                    shakeP: true
+                },
+                methods:{
+                    startGame: function(){
+                        this.gameIsRuning= true;
+                        this.playerHealth= 100;
+                        this.monsterHealth= 100;
+                        this.turns=[];
+                        this.create_id = 0;
+                    },
+                    attack: function(){
+                        
+                        this.monsterHealth -= this.calculateDamage(10,3);
+                        this.listLogs("attackMonster");
+                        this.shakeP=!this.shakeP;
+                        if(this.monsterHealth <= 0){
+                            this.monsterHealth = 0;
+                            this.listLogs("win");
+                            this.gameIsRuning = false;
+                        }else{
+                            this.playerHealth -= this.calculateDamage(5,3);
+                            this.listLogs("attackPlayer");
+                            if(this.playerHealth <= 0){
+                                this.playerHealth = 0;
+                                this.listLogs("lose");
+                                this.gameIsRuning = false;
+                            }
+                        }
+                    },
+                    specialAttack: function(){
+                        this.monsterHealth -= this.calculateDamage(50,15);
+                        this.listLogs("attackMonster");
+                        this.shakeP=!this.shakeP;
+                        if(this.monsterHealth <= 0){
+                            this.monsterHealth = 0;
+                            this.listLogs("win");
+                            this.gameIsRuning = false;
+                        }else{
+                            this.playerHealth -= this.calculateDamage(5,3);
+                            this.listLogs("attackPlayer");
+                            if(this.playerHealth <= 0){
+                                this.playerHealth = 0;
+                                this.listLogs("lose");
+                                this.gameIsRuning = false;
+                            }
+                        }
+                    },
+                    heal: function(){
+                        this.playerHealth -= this.calculateDamage(5,3);
+                        this.listLogs("attackPlayer");
+                        if(this.monsterHealth <= 0){
+                            this.monsterHealth = 0;
+                            alert('GANHOU');
+                            this.listLogs("win");
+                            this.gameIsRuning = false;
+                        }else{
+                            this.playerHealth += this.calculateDamage(20,10);
+                            this.listLogs("playerHeal");
+                            if(this.playerHealth <= 0){
+                                this.playerHealth = 0;
+                                this.listLogs("lose");
+                                this.gameIsRuning = false;
+                            }
+                        }
+                    },
+                    giveUp: function(){
+                        alert("NÃO DESISTAS GUERREIRO!");
+                    },
+                    calculateDamage: function(max, min){
+                        return damage = Math.max(Math.floor(Math.random()*max)+1, min);
+                    },
+                    listLogs: function(verify){
+                        if(verify == "attackMonster"){
+                            this.turns.unshift({
+                                id: this._create_id,
+                                isPlayer: true,
+                                text: 'Player hits monster for ' + this.monsterHealth
+                            })
+                        }else if(verify == "attackPlayer"){
+                            this.turns.unshift({
+                                id: this._create_id,
+                                isPlayer: false,
+                                text: 'Monster hits player for ' + this.playerHealth
+                            })
+                        }else if(verify == "playerHeal"){
+                            this.turns.unshift({
+                                id: this._create_id,
+                                isPlayer: true,
+                                text: 'Player just healed for' + this.playerHealth
+                            })
+                        }else if(verify == "win"){
+                            this.turns.unshift({
+                                id: this._create_id,
+                                isPlayer: true,
+                                text: 'Player Wins!!!'
+                            })
+                        }else if(verify == "lose"){
+                            this.turns.unshift({
+                                id: this._create_id,
+                                isPlayer: false,
+                                text: 'Monster Wins!!!'
+                            })
+                        }
+                        this._create_id++;
+                    }
+                },
+                watch: {
+                    shakeP: function(valor){
+                        var dados = this;
+                        setTimeout(function(){
+                            dados.shakeP = true
+                        }, 1)
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

@@ -1,4 +1,4 @@
-# api_nasa
+# api_receitas
 
 ## Project setup
 ```
